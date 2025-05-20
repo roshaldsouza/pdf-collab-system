@@ -4,17 +4,15 @@ import fs from 'fs';
 import path from 'path';
 import File from '../models/File';
 import { authenticate } from './auth';
+import asyncHandler from 'express-async-handler';
 
-// Extend Express Request type
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-      };
-      file?: Express.Multer.File;
-    }
-  }
+// Extend Express Request type for authentication
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    email: string; // Added email to match your requirements
+  };
+  file?: Express.Multer.File;
 }
 
 const router = Router();
@@ -45,7 +43,7 @@ router.post(
   '/upload',
   authenticate,
   upload.single('pdf'),
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.file) {
         res.status(400).json({ message: 'No file uploaded' });
@@ -78,8 +76,30 @@ router.post(
   }
 );
 
+// GET /files - Get all uploaded files (for dashboard)
+router.get(
+  '/files',
+  authenticate,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.id;
+    const query = (req.query.q as string)?.toLowerCase() || '';
+
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const files = await File.find({ 
+      uploadedBy: userId,
+      originalname: { $regex: query, $options: 'i' }
+    });
+    
+    res.status(200).json(files);
+  })
+);
+
 // GET /my-files
-router.get('/my-files', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/my-files', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (!req.user?.id) {
       res.status(401).json({ error: 'Unauthorized' });
@@ -94,7 +114,7 @@ router.get('/my-files', authenticate, async (req: Request, res: Response, next: 
 });
 
 // GET /search
-router.get('/search', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/search', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (!req.user?.id) {
       res.status(401).json({ error: 'Unauthorized' });

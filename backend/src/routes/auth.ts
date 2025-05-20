@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { users, user } from '../models/user';
 import { v4 as uuidv4 } from 'uuid';
 
-// Initialize the router at the top level
+// Initialize the router
 const router = Router();
 const JWT_SECRET: string = process.env.JWT_SECRET || 'your_jwt_secret';
 
@@ -14,6 +14,7 @@ declare global {
     interface Request {
       user?: {
         id: string;
+        email: string;
       };
     }
   }
@@ -81,7 +82,11 @@ router.post('/login', asyncHandler(async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  const token = jwt.sign({ userId: foundUser.id }, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign(
+    { userId: foundUser.id, email: foundUser.email },
+    JWT_SECRET,
+    { expiresIn: '1h' }
+  );
 
   res.status(200).json({
     token,
@@ -106,8 +111,8 @@ export const authenticate = (
   const token = authHeader.replace('Bearer ', '');
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    req.user = { id: decoded.userId };
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
+    req.user = { id: decoded.userId, email: decoded.email };
     next();
   } catch (err) {
     res.status(401).json({ message: 'Invalid token' });
