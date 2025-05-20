@@ -2,6 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import authRouter from './routes/auth';
 import filesRouter from './routes/files';
+import mongoose from 'mongoose';
+
+mongoose.connect('mongodb://localhost:27017/pdf-collab', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+} as any)
+.then(() => console.log('MongoDB connected'))
+.catch((err) => console.error('MongoDB connection error:', err));
 
 const app = express();
 app.use(cors());
