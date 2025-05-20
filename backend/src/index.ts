@@ -1,11 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import authRouter from './routes/auth';
+import filesRouter from './routes/files';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/api/auth', authRouter);
+app.use('/api/files', filesRouter);
+
 
 app.get('/', (req, res) => {
   res.send('PDF Management & Collaboration Backend is running.');
