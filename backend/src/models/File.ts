@@ -14,6 +14,12 @@ const fileSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  sharedWith: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }
+  ],
 });
 
 export default mongoose.model('File', fileSchema);

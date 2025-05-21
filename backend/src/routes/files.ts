@@ -5,6 +5,8 @@ import path from 'path';
 import File from '../models/File';
 import { authenticate } from './auth';
 import asyncHandler from 'express-async-handler';
+import { users } from '../models/user';
+
 
 // Extend Express Request type for authentication
 interface AuthRequest extends Request {

@@ -3,6 +3,10 @@ import cors from 'cors';
 import authRouter from './routes/auth';
 import filesRouter from './routes/files';
 import mongoose from 'mongoose';
+import shareRoutes from './routes/share';
+
+
+
 
 mongoose.connect('mongodb://localhost:27017/pdf-collab', {
   useNewUrlParser: true,
@@ -16,6 +20,8 @@ app.use(cors());
 app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/api/files', filesRouter);
+
+app.use('/api/share', shareRoutes);
 
 
 app.get('/', (req, res) => {
